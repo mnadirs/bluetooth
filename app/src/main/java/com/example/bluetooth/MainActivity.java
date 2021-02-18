@@ -14,7 +14,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.IpSecManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -30,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter bluetoothAdapter;
     private ArrayAdapter<String> listAdapter;
 
+    Handler handler = new Handler();
+    Runnable refresh;
 
 
 
@@ -45,11 +49,27 @@ public class MainActivity extends AppCompatActivity {
         listAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         devicesList.setAdapter(listAdapter);
 
+        refresh = new Runnable() {
+            @Override
+            public void run() {
+                if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()){
+                    if(checkCoarseLocationPermission()){
+                        listAdapter.clear();
+                        bluetoothAdapter.startDiscovery();
+                    }
+                }else {
+                    checkBluethoothState();
+                }
+                handler.postDelayed(refresh,500);
+            }
+        };
+        handler.post(refresh);
+
         checkBluethoothState();
 
 
 
-        Scan.setOnClickListener(new View.OnClickListener() {
+        /*Scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()){
@@ -61,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                     checkBluethoothState();
                 }
             }
-        });
+        });*/
 
         checkCoarseLocationPermission();
     }
